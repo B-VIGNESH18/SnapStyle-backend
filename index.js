@@ -28,14 +28,17 @@ const allowedOrigins = [
 // Shared CORS config
 const corsOptions = {
   origin: function (origin, callback) {
+    console.log("CORS origin check:", origin);
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.error("Blocked by CORS:", origin);
       callback(new Error("Not allowed by CORS"));
     }
   },
   credentials: true,
 };
+  
 
 // Apply CORS
 app.use(cors(corsOptions));
@@ -55,8 +58,24 @@ app.get("/", (req, res) => {
   res.send("API is working fine");
   console.log("API is working");
 });
-
+// Global Error Handler - ensures CORS headers are sent on errors
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+  
+    // Set CORS headers manually to avoid CORS blocking on errors
+    res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
+    res.header("Access-Control-Allow-Credentials", "true");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  
+    res.status(err.status || 500).json({
+      success: false,
+      message: err.message || "Internal Server Error",
+    });
+  });
+  
 // Start server
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+  

@@ -82,21 +82,64 @@ const updateCart = async (req, res) => {
 
 // Get user's cart data
 
+// // 
+// const getUserCart = async (req, res) => {
+//   try {
+//     const userId = req.user.id; // if using middleware that sets req.user
+
+//     const userData = await user.findById(userId);
+//     if (!userData) {
+//       return res.status(404).json({
+//         status: "error",
+//         message: "User not found",
+//       });
+//     }
+
+//     const cartData = userData.cartData || {};
+
+//     res.status(200).json({
+//       status: "success",
+//       message: "Cart data fetched successfully",
+//       cartData,
+//     });
+//   } catch (error) {
+//     console.error("Error fetching cart data:", error);
+//     res.status(500).json({
+//       status: "error",
+//       message: "An error occurred while fetching the cart data",
+//       error: error.message,
+//     });
+//   }
+// };
+// in your cart controller file
+
 const getUserCart = async (req, res) => {
   try {
-    const {userId}=req.body;
+    const { userId } = req.body;  // read userId from request body
+    if (!userId) {
+      return res.status(400).json({
+        status: "error",
+        message: "userId is required"
+      });
+    }
+
     const userData = await user.findById(userId);
-    const cardData = await userData.cardData;
+    if (!userData) {
+      return res.status(404).json({
+        status: "error",
+        message: "User not found"
+      });
+    }
+
+    const cartData = userData.cartData || {};
     res.status(200).json({
       status: "success",
-      message: "get card data",
-      cardData,
+      message: "Cart data fetched",
+      cartData,
     });
 
   } catch (error) {
     console.error("Error fetching cart data:", error);
-    
-    // Return a generic error message with the actual error logged
     res.status(500).json({
       status: "error",
       message: "An error occurred while fetching the cart data",
@@ -104,5 +147,6 @@ const getUserCart = async (req, res) => {
     });
   }
 };
+
 
 export { getUserCart, addToCart, updateCart };

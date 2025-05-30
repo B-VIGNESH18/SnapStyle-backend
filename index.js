@@ -20,7 +20,17 @@ connectDB()
 connectcloudinary()
 
 // Middleware
-app.use(cors());
+// app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://snap-style-frontend.vercel.app",
+    ],
+    credentials: true, // allow cookies, tokens, etc.
+  })
+);
+  
 app.use(express.json());
 
 //api routes

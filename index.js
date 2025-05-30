@@ -14,37 +14,35 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT;
 
-// MongoDB & Cloudinary
+// Connect DB & Cloudinary
 connectDB();
 connectcloudinary();
 
-// CORS middleware
+// Allowed origins
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
   "https://snap-style-frontend.vercel.app",
 ];
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // Allow requests with no origin (e.g. mobile apps or curl)
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      } else {
-        return callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true,
-  })
-);
+// Shared CORS config
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+};
 
-// Ensure Express handles JSON
+// Apply CORS
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions)); // Preflight support for all routes
+
+// JSON parsing
 app.use(express.json());
-
-// Allow preflight requests for all routes
-app.options("*", cors());
 
 // API routes
 app.use("/api/user", userRouter);
@@ -52,7 +50,7 @@ app.use("/api/product", productRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/order", orderRouter);
 
-// Test endpoint
+// Root endpoint
 app.get("/", (req, res) => {
   res.send("API is working fine");
   console.log("API is working");
@@ -62,4 +60,3 @@ app.get("/", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
-

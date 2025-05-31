@@ -26,19 +26,19 @@ import jwt from "jsonwebtoken";
 
 const authUser = (req, res, next) => {
   try {
-    const token = req.headers.token;
-    if (!token) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({
         success: false,
         message: "Not authorized, login required",
       });
     }
 
+    const token = authHeader.split(" ")[1]; // extract token from "Bearer token"
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // You can add extra checks here if needed, like user role, etc.
-
-    req.user = decoded; // Save user data for next middleware/controller
+    req.user = decoded;
     next();
   } catch (error) {
     console.error("authUser error:", error);

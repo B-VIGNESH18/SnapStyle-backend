@@ -128,14 +128,16 @@ const placeOrderRazorpay = async (req, res) => {
 //All orders data for admin panel 
 const allOrders = async (req, res) => {
     try {
-        const orders=await orderModel.find({})
+        const orders = await orderModel.find({})
+        console.log("Orders fetched:", orders.length);
         res.json({
             success:true,
             orders
         })
 
     } catch (error) {
-        console.log(error)
+        // console.log(error)
+        console.error("allOrders error:", error.message);
         res.json({
             success:false,
             message:error.message

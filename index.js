@@ -101,24 +101,21 @@ const allowedOrigins = ["https://snap-style-frontend.vercel.app"];
 
 const corsOptions = {
   origin: function (origin, callback) {
+    console.log("Incoming request origin:", origin);
+
+    // Allow undefined origins (like Postman) and all localhost ports
     const isLocalhost = origin && origin.startsWith("http://localhost:");
-    const isAllowed = isLocalhost || allowedOrigins.includes(origin);
 
-    console.log(
-      "CORS Origin:",
-      origin,
-      "->",
-      isAllowed ? "✅ Allowed" : "❌ Blocked"
-    );
-
-    if (isAllowed || !origin) {
+    if (!origin || isLocalhost || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.error("❌ CORS blocked origin:", origin);
       callback(new Error("Not allowed by CORS"));
     }
   },
   credentials: true,
 };
+
 
 // ✅ Apply CORS
 app.use(cors(corsOptions));

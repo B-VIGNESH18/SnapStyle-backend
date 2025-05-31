@@ -89,55 +89,65 @@ import cartRouter from "./Routes/CartRoute.js";
 import orderRouter from "./Routes/OrderRoute.js";
 
 dotenv.config();
-const app = express();
-const PORT = process.env.PORT;
 
-// DB & Cloudinary
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+// Connect DB & Cloudinary
 connectDB();
 connectcloudinary();
 
-// ✅ Allowed origins
-const allowedOrigins = ["https://snap-style-frontend.vercel.app"];
+// Allowed origins list — exactly match your frontend origins
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "https://snap-style-frontend.vercel.app",
+];
 
+// CORS options with dynamic origin check
 const corsOptions = {
-  origin: function (origin, callback) {
-    console.log("Incoming request origin:", origin);
+  origin: (origin, callback) => {
+    // Log origin for debugging
+    console.log("CORS origin check:", origin);
 
-    // Allow undefined origins (like Postman) and all localhost ports
-    const isLocalhost = origin && origin.startsWith("http://localhost:");
+    // Allow requests with no origin like Postman or curl
+    if (!origin) return callback(null, true);
 
-    if (!origin || isLocalhost || allowedOrigins.includes(origin)) {
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.error("❌ CORS blocked origin:", origin);
+      console.error("Blocked by CORS:", origin);
       callback(new Error("Not allowed by CORS"));
     }
   },
   credentials: true,
+  optionsSuccessStatus: 200, // for legacy browsers support
 };
 
-
-// ✅ Apply CORS
+// Apply CORS middleware globally with these options
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions)); // Handle preflight requests
+app.options("*", cors(corsOptions)); // enable preflight for all routes
 
-// JSON parsing
+// JSON body parsing middleware
 app.use(express.json());
 
-// Routes
+// API routes
 app.use("/api/user", userRouter);
 app.use("/api/product", productRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/order", orderRouter);
 
+// Root route
 app.get("/", (req, res) => {
   res.send("API is working fine");
+  console.log("API is working");
 });
 
-// ✅ Global error handler to ensure CORS headers are sent
+// Global error handler — make sure CORS headers are sent on errors
 app.use((err, req, res, next) => {
-  console.error("Error:", err.message);
+  console.error(err.stack);
 
+  // Set CORS headers manually to prevent CORS issues on error response
   res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
   res.header("Access-Control-Allow-Credentials", "true");
   res.header(
